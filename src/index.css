@@ -39,3 +39,27 @@ span {
 .ant-menu-inline .ant-menu-item::after {
   border-right: 3px solid #067513 !important;
 }
+
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #09835e !important;
+  font-size: 25px;
+}
+
+.ant-tabs-tab-btn {
+  font-size: 25px;
+}
+
+.ant-tabs-tab:hover {
+  color: #09835e !important;
+}
+
+.ant-tabs-tab-btn:focus,
+.ant-tabs-tab-remove:focus,
+.ant-tabs-tab-btn:active,
+.ant-tabs-tab-remove:active {
+  color: #09835e !important;
+}
+
+.ant-tabs-ink-bar {
+  background: #09835e !important;
+}

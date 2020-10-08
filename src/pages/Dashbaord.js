@@ -19,7 +19,7 @@ import Record from "../pages/Record";
 
 export default class Dashboard extends Component {
   state = {
-    selectedMenu: 0,
+    selectedMenu: 3,
   };
 
   handleNavigation = (menu) => {
