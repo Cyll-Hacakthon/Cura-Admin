@@ -63,3 +63,11 @@ span {
 .ant-tabs-ink-bar {
   background: #09835e !important;
 }
+
+.ant-list-split .ant-list-item {
+  border-bottom: 1px solid #09835e !important;
+}
+
+.ant-list-item-meta-description {
+  white-space: break-spaces;
+}

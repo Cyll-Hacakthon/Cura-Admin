@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { Menu, Layout, Divider } from "antd";
 import { ButtonText } from "../style/Layout";
-import Logo from "../assests/Logo.png";
+import Logo from "../assests/LogoDoctor.png";
 import {
   HomeFilled,
   UserOutlined,
@@ -10,16 +10,28 @@ import {
   ProfileOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
+import { signOut } from "../store/actions/authAction";
+import { connect } from "react-redux";
+import { firestoreConnect } from "react-redux-firebase";
+import { compose } from "redux";
 
-//Dashboard content
+//Dashboard content (Doctor)
 import Home from "../pages/Home";
 import Forum from "../pages/Forum";
 import Profile from "../pages/Profile";
 import Record from "../pages/Record";
+import SignIn from "../pages/SignIn";
+import Report from "../pages/Report";
 
-export default class Dashboard extends Component {
+//Pharmacy
+import DashboardPhamacy from "../pages/Pharmacy/DashboardPharmacy";
+
+//Nurse
+import DashboardNurse from "../pages/Nurse/DashboardNurse";
+
+class Dashboard extends Component {
   state = {
-    selectedMenu: 3,
+    selectedMenu: 0,
   };
 
   handleNavigation = (menu) => {
@@ -31,7 +43,7 @@ export default class Dashboard extends Component {
         break;
       }
 
-      case "Profile": {
+      case "Report": {
         this.setState({
           selectedMenu: 1,
         });
@@ -52,6 +64,13 @@ export default class Dashboard extends Component {
         break;
       }
 
+      case "Profile": {
+        this.setState({
+          selectedMenu: 4,
+        });
+        break;
+      }
+
       default: {
         this.setState({
           selectedMenu: 0,
@@ -65,9 +84,8 @@ export default class Dashboard extends Component {
       case 0: {
         return <Home />;
       }
-
       case 1: {
-        return <Profile />;
+        return <Report />;
       }
       case 2: {
         return <Record />;
@@ -75,10 +93,17 @@ export default class Dashboard extends Component {
       case 3: {
         return <Forum />;
       }
+      case 4: {
+        return <Profile />;
+      }
       default: {
         return <Home />;
       }
     }
+  };
+
+  handleSignOut = () => {
+    this.props.signOut();
   };
 
   renderLeftBar = () => {
@@ -99,12 +124,9 @@ export default class Dashboard extends Component {
           <ButtonText>Home</ButtonText>
         </Menu.Item>
 
-        <Menu.Item
-          key="1"
-          onClick={this.handleNavigation.bind(this, "Profile")}
-        >
-          <UserOutlined style={{ color: "#ffffff", fontSize: 20 }} />
-          <ButtonText>Profile</ButtonText>
+        <Menu.Item key="1" onClick={this.handleNavigation.bind(this, "Report")}>
+          <LaptopOutlined style={{ color: "#ffffff", fontSize: 20 }} />
+          <ButtonText>Add Report</ButtonText>
         </Menu.Item>
 
         <Menu.Item
@@ -120,7 +142,15 @@ export default class Dashboard extends Component {
           <ButtonText>Forum</ButtonText>
         </Menu.Item>
 
-        <Menu.Item key="4">
+        <Menu.Item
+          key="4"
+          onClick={this.handleNavigation.bind(this, "Profile")}
+        >
+          <UserOutlined style={{ color: "#ffffff", fontSize: 20 }} />
+          <ButtonText>Profile</ButtonText>
+        </Menu.Item>
+
+        <Menu.Item key="5" onClick={this.handleSignOut}>
           <LogoutOutlined style={{ color: "#ffffff", fontSize: 20 }} />
           <ButtonText>Log Out</ButtonText>
         </Menu.Item>
@@ -128,15 +158,58 @@ export default class Dashboard extends Component {
     );
   };
 
+  componentDidMount() {
+    console.log(this.props.users);
+  }
+
   render() {
-    return (
-      <Layout>
-        {this.renderLeftBar()}
-        <DashboardContent>{this.renderContent()}</DashboardContent>
-      </Layout>
-    );
+    if (this.props.auth.isEmpty) return <SignIn />;
+    else if (this.props.users && this.props.users[0].role === "Doctor") {
+      return (
+        <Layout>
+          {this.renderLeftBar()}
+          <DashboardContent>{this.renderContent()}</DashboardContent>
+        </Layout>
+      );
+    } else if (this.props.users && this.props.users[0].role === "Pharmacy") {
+      return <DashboardPhamacy />;
+    } else if (this.props.users && this.props.users[0].role === "Nurse") {
+      return <DashboardNurse />;
+    } else {
+      return null;
+    }
   }
 }
+
+const mapStateToProps = (state) => {
+  console.log(state.firestore.ordered.users);
+  return {
+    auth: state.firebase.auth,
+    users: state.firestore.ordered.users,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    signOut: () => {
+      dispatch(signOut());
+    },
+  };
+};
+
+export default compose(
+  connect(mapStateToProps, mapDispatchToProps),
+  firestoreConnect((props) => {
+    let firestoreList = [];
+    if (props.firebase.auth().currentUser) {
+      firestoreList.push({
+        collection: "users",
+        where: ["id", "==", props.firebase.auth().currentUser.uid],
+      });
+    }
+    return firestoreList;
+  })
+)(Dashboard);
 
 const LeftNavBar = styled(Menu)`
   width: 240px;
