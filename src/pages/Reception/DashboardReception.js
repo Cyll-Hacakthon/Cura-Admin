@@ -2,15 +2,16 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { Menu, Layout, Divider } from "antd";
 import { ButtonText } from "../../style/Layout";
-import Logo from "../../assests/LogoPharmacy.png";
+import Logo from "../../assests/LogoReception.png";
 import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
 import { signOut } from "../../store/actions/authAction";
 import { connect } from "react-redux";
 
 //Dashboard content
-import MedicineList from "./MedicineList";
+import ReceptionList from "./ReceptionList";
+import TakeNumber from "./TakeNumber";
 
-class DashboardPharmacy extends Component {
+class DashboardReception extends Component {
   state = {
     selectedMenu: 0,
   };
@@ -20,6 +21,12 @@ class DashboardPharmacy extends Component {
       case "List": {
         this.setState({
           selectedMenu: 0,
+        });
+        break;
+      }
+      case "Take Number": {
+        this.setState({
+          selectedMenu: 1,
         });
         break;
       }
@@ -34,10 +41,13 @@ class DashboardPharmacy extends Component {
   renderContent = () => {
     switch (this.state.selectedMenu) {
       case 0: {
-        return <MedicineList />;
+        return <ReceptionList />;
+      }
+      case 1: {
+        return <TakeNumber />;
       }
       default: {
-        return <MedicineList />;
+        return <ReceptionList />;
       }
     }
   };
@@ -61,7 +71,14 @@ class DashboardPharmacy extends Component {
         <Divider />
         <Menu.Item key="0" onClick={this.handleNavigation.bind(this, "List")}>
           <UserOutlined style={{ color: "#ffffff", fontSize: 20 }} />
-          <ButtonText>Medicine list</ButtonText>
+          <ButtonText>Check In</ButtonText>
+        </Menu.Item>
+        <Menu.Item
+          key="1"
+          onClick={this.handleNavigation.bind(this, "Take Number")}
+        >
+          <UserOutlined style={{ color: "#ffffff", fontSize: 20 }} />
+          <ButtonText>Take Number</ButtonText>
         </Menu.Item>
 
         <Menu.Item key="5" onClick={this.handleSignOut}>
@@ -90,7 +107,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(null, mapDispatchToProps)(DashboardPharmacy);
+export default connect(null, mapDispatchToProps)(DashboardReception);
 
 const LeftNavBar = styled(Menu)`
   width: 240px;

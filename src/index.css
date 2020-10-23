@@ -71,3 +71,11 @@ span {
 .ant-list-item-meta-description {
   white-space: break-spaces;
 }
+
+.ant-form-item-label > label {
+  font-size: 20px !important;
+}
+
+.ant-card-body {
+  white-space: break-spaces;
+}

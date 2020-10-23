@@ -1,41 +1,28 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 import { Menu, Layout, Divider } from "antd";
-import { ButtonText } from "../style/Layout";
-import Logo from "../assests/LogoDoctor.png";
+import { ButtonText } from "../../style/Layout";
+import Logo from "../../assests/LogoDoctor.png";
 import {
   HomeFilled,
   UserOutlined,
   LaptopOutlined,
   ProfileOutlined,
   LogoutOutlined,
+  AlertOutlined,
 } from "@ant-design/icons";
-import { signOut } from "../store/actions/authAction";
+import { signOut } from "../../store/actions/authAction";
 import { connect } from "react-redux";
-import { firestoreConnect } from "react-redux-firebase";
-import { compose } from "redux";
 
 //Dashboard content (Doctor)
-import Home from "../pages/Home";
-import Forum from "../pages/Forum";
-import Profile from "../pages/Profile";
-import Record from "../pages/Record";
-import SignIn from "../pages/SignIn";
-import Setting from "../pages/Setting";
+import Home from "../../pages/Home";
+import Forum from "../../pages/Forum";
+import Profile from "../../pages/Profile";
+import Record from "../../pages/Record";
+import Setting from "../../pages/Setting";
+import Emergency from "../Emergency/Emergency";
 
-//Pharmacy
-import DashboardPhamacy from "../pages/Pharmacy/DashboardPharmacy";
-
-//Nurse
-import DashboardNurse from "../pages/Nurse/DashboardNurse";
-
-//Reception
-import DashboardReception from "../pages/Reception/DashboardReception";
-
-//Reception
-import DashboardEmergency from "../pages/Emergency/DashboardEmergency";
-
-class Dashboard extends Component {
+class DashboardEmergency extends Component {
   state = {
     selectedMenu: 0,
   };
@@ -56,23 +43,30 @@ class Dashboard extends Component {
         break;
       }
 
-      case "Forum": {
+      case "Emergency": {
         this.setState({
           selectedMenu: 2,
         });
         break;
       }
 
-      case "Profile": {
+      case "Forum": {
         this.setState({
           selectedMenu: 3,
         });
         break;
       }
 
-      case "Setting": {
+      case "Profile": {
         this.setState({
           selectedMenu: 4,
+        });
+        break;
+      }
+
+      case "Setting": {
+        this.setState({
+          selectedMenu: 5,
         });
         break;
       }
@@ -94,12 +88,15 @@ class Dashboard extends Component {
         return <Record />;
       }
       case 2: {
-        return <Forum />;
+        return <Emergency />;
       }
       case 3: {
-        return <Profile />;
+        return <Forum />;
       }
       case 4: {
+        return <Profile />;
+      }
+      case 5: {
         return <Setting />;
       }
       default: {
@@ -137,14 +134,21 @@ class Dashboard extends Component {
           <ProfileOutlined style={{ color: "#ffffff", fontSize: 20 }} />
           <ButtonText>Patient Records</ButtonText>
         </Menu.Item>
+        <Menu.Item
+          key="2"
+          onClick={this.handleNavigation.bind(this, "Emergency")}
+        >
+          <AlertOutlined style={{ color: "#ffffff", fontSize: 20 }} />
+          <ButtonText>Emergency</ButtonText>
+        </Menu.Item>
 
-        <Menu.Item key="2" onClick={this.handleNavigation.bind(this, "Forum")}>
+        <Menu.Item key="3" onClick={this.handleNavigation.bind(this, "Forum")}>
           <LaptopOutlined style={{ color: "#ffffff", fontSize: 20 }} />
           <ButtonText>Forum</ButtonText>
         </Menu.Item>
 
         <Menu.Item
-          key="3"
+          key="4"
           onClick={this.handleNavigation.bind(this, "Profile")}
         >
           <UserOutlined style={{ color: "#ffffff", fontSize: 20 }} />
@@ -152,14 +156,14 @@ class Dashboard extends Component {
         </Menu.Item>
 
         <Menu.Item
-          key="4"
+          key="5"
           onClick={this.handleNavigation.bind(this, "Setting")}
         >
           <UserOutlined style={{ color: "#ffffff", fontSize: 20 }} />
           <ButtonText>Setting</ButtonText>
         </Menu.Item>
 
-        <Menu.Item key="5" onClick={this.handleSignOut}>
+        <Menu.Item key="6" onClick={this.handleSignOut}>
           <LogoutOutlined style={{ color: "#ffffff", fontSize: 20 }} />
           <ButtonText>Log Out</ButtonText>
         </Menu.Item>
@@ -167,45 +171,15 @@ class Dashboard extends Component {
     );
   };
 
-  componentDidMount() {
-    if (this.props.firebase.auth().currentUser) {
-      console.log(this.props.firebase.auth().currentUser.uid);
-    } else {
-      console.log(111);
-    }
-  }
-
   render() {
-    if (this.props.auth.isEmpty) return <SignIn />;
-    else if (this.props.users && this.props.users[0].role === "Doctor") {
-      return (
-        <Layout>
-          {this.renderLeftBar()}
-          <DashboardContent>{this.renderContent()}</DashboardContent>
-        </Layout>
-      );
-    } else if (this.props.users && this.props.users[0].role === "Pharmacy") {
-      return <DashboardPhamacy />;
-    } else if (this.props.users && this.props.users[0].role === "Nurse") {
-      return <DashboardNurse />;
-    } else if (this.props.users && this.props.users[0].role === "Reception") {
-      return <DashboardReception />;
-    } else if (this.props.users && this.props.users[0].role === "Emergency") {
-      return <DashboardEmergency />;
-    } else {
-      return null;
-    }
+    return (
+      <Layout>
+        {this.renderLeftBar()}
+        <DashboardContent>{this.renderContent()}</DashboardContent>
+      </Layout>
+    );
   }
 }
-
-const mapStateToProps = (state) => {
-  console.log(state.firestore.ordered.users);
-
-  return {
-    auth: state.firebase.auth,
-    users: state.firestore.ordered.users,
-  };
-};
 
 const mapDispatchToProps = (dispatch) => {
   return {
@@ -215,19 +189,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default compose(
-  connect(mapStateToProps, mapDispatchToProps),
-  firestoreConnect((props) => {
-    let firestoreList = [];
-    if (props.firebase.auth().currentUser) {
-      firestoreList.push({
-        collection: "users",
-        where: ["id", "==", props.firebase.auth().currentUser.uid],
-      });
-    }
-    return firestoreList;
-  })
-)(Dashboard);
+export default connect(null, mapDispatchToProps)(DashboardEmergency);
 
 const LeftNavBar = styled(Menu)`
   width: 240px;

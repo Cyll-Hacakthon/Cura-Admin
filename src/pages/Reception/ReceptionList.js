@@ -1,20 +1,30 @@
 import React, { Component } from "react";
 import { ContentTitle } from "../../style/Layout";
 import styled from "styled-components";
-import { List, Avatar, Input } from "antd";
-import { Link } from "react-router-dom";
+import { List, Avatar, Input, Button } from "antd";
 import { connect } from "react-redux";
 import { firestoreConnect } from "react-redux-firebase";
 import { compose } from "redux";
 
+//Action
+import { checkInPatient } from "../../store/actions/patientAction";
+
 const { Search } = Input;
 
-class Preconsultation extends Component {
+class ReceptionList extends Component {
+  state = {
+    idQueue: "",
+  };
+
   handleTime = (timeStampDate) => {
     const dateInMillis = timeStampDate * 1000;
-
     let date = new Date(dateInMillis).toLocaleTimeString();
+
     return " \nArrival Time - " + date;
+  };
+
+  handleCheckIn = (id) => {
+    this.props.checkInPatient(id);
   };
 
   renderPatientList = () => {
@@ -24,21 +34,26 @@ class Preconsultation extends Component {
           itemLayout="horizontal"
           dataSource={this.props.patients}
           renderItem={(item) => (
-            <Link to={"/nurse/" + item.id}>
-              <PatientList>
-                <List.Item.Meta
-                  avatar={
-                    <Avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
-                  }
-                  title={<h4>{item.name}</h4>}
-                  description={
-                    "Visit purpose - " +
-                    item.visitPurpose +
-                    this.handleTime(item.arrivalTime)
-                  }
-                />
-              </PatientList>
-            </Link>
+            <List.Item>
+              <List.Item.Meta
+                avatar={
+                  <Avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
+                }
+                title={<h4>{item.name}</h4>}
+                description={
+                  "Visit purpose - " +
+                  item.visitPurpose +
+                  this.handleTime(item.arrivalTime)
+                }
+              />
+              <DoneButton
+                type="primary"
+                size="large"
+                onClick={this.handleCheckIn.bind(this, item.id)}
+              >
+                Check In
+              </DoneButton>
+            </List.Item>
           )}
         />
       );
@@ -50,13 +65,19 @@ class Preconsultation extends Component {
   render() {
     return (
       <React.Fragment>
-        <ContentTitle>Preconsultation</ContentTitle>
+        <ContentTitle>Check-In List</ContentTitle>
         <SearchBar placeholder="Patient's ID" />
         <PatientListContainer>{this.renderPatientList()}</PatientListContainer>
       </React.Fragment>
     );
   }
 }
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    checkInPatient: (id) => dispatch(checkInPatient(id)),
+  };
+};
 
 const mapStateToProps = (state) => {
   return {
@@ -65,17 +86,17 @@ const mapStateToProps = (state) => {
 };
 
 export default compose(
-  connect(mapStateToProps),
+  connect(mapStateToProps, mapDispatchToProps),
   firestoreConnect([
     {
       collection: "queue",
-      where: ["accessNurse", "==", true],
-      orderBy: ["accessNurse"],
+      where: ["accessReception", "==", true],
+      orderBy: ["accessReception"],
       // eslint-disable-next-line
       orderBy: ["arrivalTime", "asc"],
     },
   ])
-)(Preconsultation);
+)(ReceptionList);
 
 const PatientListContainer = styled.div`
   width: 90%;
@@ -86,14 +107,6 @@ const PatientListContainer = styled.div`
   margin-top: 10px;
 `;
 
-const PatientList = styled(List.Item)`
-  cursor: pointer;
-  :hover {
-    background: rgb(9, 131, 94, 0.5);
-    transition: all 1s;
-  }
-`;
-
 const SearchBar = styled(Search)`
   right: 10px;
   position: absolute;
@@ -101,4 +114,19 @@ const SearchBar = styled(Search)`
   margin-top: 30px;
   width: 250px;
   height: 44px;
+`;
+
+const DoneButton = styled(Button)`
+  background-color: #09835e;
+  border-color: #09835e;
+  margin-left: 20px;
+  width: 130px;
+  :hover {
+    background-color: #00e05a;
+    border-color: #00e05a;
+  }
+
+  :focus {
+    background-color: #00e05a;
+  }
 `;

@@ -1,19 +1,76 @@
 import React, { Component } from "react";
-import {
-  ContentTitle,
-  Title,
-  SubTitle,
-  BarText,
-  BarTitle,
-} from "../style/Layout";
+import { ContentTitle, Title, BarText, BarTitle } from "../style/Layout";
 import styled from "styled-components";
-import { Input, Divider } from "antd";
+import { Input, Modal } from "antd";
 import Profile from "../assests/Profile.png";
 import { EyeOutlined } from "@ant-design/icons";
+import { connect } from "react-redux";
+import { firestoreConnect } from "react-redux-firebase";
+import { compose } from "redux";
 
 const { Search } = Input;
 
-export default class Record extends Component {
+class Record extends Component {
+  state = {
+    visible: false,
+    idReport: "",
+  };
+
+  handleVisible = (check, id) => {
+    this.setState({
+      visible: check,
+      idReport: id,
+    });
+  };
+
+  renderReportContent = () => {
+    let reportContent = [];
+    // eslint-disable-next-line
+    {
+      this.props.patientReports &&
+        this.props.patientReports
+          .filter((eachReport) => eachReport.id === this.state.idReport)
+          // eslint-disable-next-line
+          .map((eachReport) => {
+            reportContent.push(
+              <React.Fragment>
+                <h1>
+                  {"Medical Report from " +
+                    eachReport.hospital +
+                    "(" +
+                    this.handleTime(eachReport.createdAt) +
+                    ")"}
+                </h1>
+                <ReportContentText>
+                  {"Doctor - " + eachReport.doctorName}
+                </ReportContentText>
+                <br />
+                <ReportContentText>
+                  {"Specialist - " + eachReport.specialist}
+                </ReportContentText>
+                <br />
+                <ReportContentText>
+                  {"Title - " + eachReport.title}
+                </ReportContentText>
+                <br />
+                <ReportContentText>
+                  {"Subjective - " + eachReport.subjective}
+                </ReportContentText>
+                <br />
+                <ReportContentText>
+                  {"Assessment - " + eachReport.assessment}
+                </ReportContentText>
+                <br />
+                <ReportContentText>
+                  {"Prescription - " + eachReport.rx}
+                </ReportContentText>
+              </React.Fragment>
+            );
+          });
+    }
+    return reportContent;
+  };
+
   renderForumList = () => {
     return (
       <ListContainer>
@@ -31,16 +88,41 @@ export default class Record extends Component {
     );
   };
 
+  handleTime = (timeStampDate) => {
+    console.log(timeStampDate);
+    const dateInMillis = timeStampDate.seconds * 1000;
+    var date = new Date(dateInMillis).toDateString();
+
+    return date;
+  };
+
   renderFUPatientList = () => {
-    return (
-      <ListContainer>
-        <ProfileImg src={Profile} />
-        <BarContainer>
-          <BarTitle>Brian R. Little</BarTitle>
-          <BarText>Abdomen Pain, Last Visit : 5 / August / 2020</BarText>
-        </BarContainer>
-      </ListContainer>
-    );
+    let patientReportList = [];
+    // eslint-disable-next-line
+    {
+      this.props.patientReports &&
+        // eslint-disable-next-line
+        this.props.patientReports.map((eachReport) => {
+          patientReportList.push(
+            <ListContainer
+              onClick={this.handleVisible.bind(this, true, eachReport.id)}
+            >
+              <ProfileImg src={Profile} />
+              <BarContainer>
+                <BarTitle>{eachReport.patientName}</BarTitle>
+                <BarText>
+                  {"Title - " +
+                    eachReport.title +
+                    ", created at - " +
+                    this.handleTime(eachReport.createdAt)}
+                </BarText>
+              </BarContainer>
+            </ListContainer>
+          );
+        });
+    }
+
+    return patientReportList;
   };
 
   render() {
@@ -49,15 +131,50 @@ export default class Record extends Component {
         <ContentTitle>Patient Records</ContentTitle>
         <SearchBar placeholder="Patient's ID" />
         <Title>Active Records</Title>
-        <SubTitle>Forum</SubTitle>
+        {/* <SubTitle>Forum</SubTitle>
         {this.renderForumList()}
         <Divider />
-        <SubTitle>Follow Up Patient / Hospitalized</SubTitle>
+        <SubTitle>Follow Up Patient / Hospitalized</SubTitle> */}
         {this.renderFUPatientList()}
+        <Modal
+          visible={this.state.visible}
+          title={null}
+          onCancel={this.handleVisible.bind(this, false, "")}
+          footer={null}
+          className="customModal"
+          width={1000}
+        >
+          {this.renderReportContent()}
+        </Modal>
       </>
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    patientReports: state.firestore.ordered.medicalReport,
+  };
+};
+
+export default compose(
+  connect(mapStateToProps),
+  firestoreConnect((props) => {
+    let firestoreList = [];
+
+    if (props.firebase.auth().currentUser) {
+      firestoreList.push({
+        collection: "medicalReport",
+        where: ["doctorId", "==", props.firebase.auth().currentUser.uid],
+        orderBy: ["doctorId"],
+        // eslint-disable-next-line
+        orderBy: ["createdAt", "desc"],
+      });
+    }
+
+    return firestoreList;
+  })
+)(Record);
 
 const SearchBar = styled(Search)`
   right: 10px;
@@ -94,4 +211,8 @@ const ViewContainer = styled.div`
 
 const ProfileImg = styled.img`
   padding: 20px;
+`;
+
+const ReportContentText = styled.span`
+  font-size: 18px;
 `;

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { SubTitle, Title } from "../style/Layout";
+import { Title } from "../../style/Layout";
 import styled from "styled-components";
 import { Button, Modal, Tabs, Form, Input, Select, Card, Col, Row } from "antd";
 import { connect } from "react-redux";
@@ -7,24 +7,16 @@ import { firestoreConnect } from "react-redux-firebase";
 import { compose } from "redux";
 import { Link } from "react-router-dom";
 
-//Action
-import {
-  nextPatient,
-  createMedicalReport,
-  editAndVerified,
-} from "../store/actions/patientAction";
-
 const { TabPane } = Tabs;
 const { TextArea } = Input;
 const { Option } = Select;
 
-class PatientInfo extends Component {
+class EmergencyInfo extends Component {
   state = {
     currentNumber: 5,
     visible: false,
     visibleReport: false,
     visibleContent: false,
-    visibleEdit: false,
     filterSpecialist: "",
     filterHospital: "",
     idReport: "",
@@ -35,18 +27,11 @@ class PatientInfo extends Component {
     objective: "",
     assessment: "",
     rx: "",
-    longTermMedicine: [],
     doctorName: "",
     patientId: "",
     patientName: "",
     patientIc: "",
     doctorId: "",
-    //Edit Info
-    allergy: "",
-    surgery: "",
-    disability: "",
-    disease: "",
-    bloodType: "",
   };
 
   handleFilterSpclist = (value) => {
@@ -67,12 +52,6 @@ class PatientInfo extends Component {
     );
   };
 
-  handleVisible = (check) => {
-    this.setState({
-      visible: check,
-    });
-  };
-
   handleVisibleReport = (check) => {
     this.setState({
       visibleReport: check,
@@ -83,58 +62,6 @@ class PatientInfo extends Component {
     this.setState({
       visibleContent: check,
       idReport: id,
-    });
-  };
-
-  handleVisibleEdit = (check) => {
-    this.setState({
-      visibleEdit: check,
-    });
-  };
-
-  handleNextPatient = () => {
-    this.props.nextPatient(this.props.match.params.id).then(() => {
-      this.props.history.push("/");
-    });
-  };
-
-  handleSubmit = () => {
-    this.setState(
-      {
-        doctorId: this.props.firebase.auth().currentUser.uid,
-        patientId: this.props.match.params.id,
-        patientName: this.props.user.name,
-        patientIc: this.props.user.ic,
-        doctorName: this.props.doctor[0].name,
-        hospital: this.props.doctor[0].hospital,
-        specialist: this.props.doctor[0].specialist,
-        longTermMedicine: this.props.user.medicineTaken.longTerm,
-      },
-      () => {
-        this.props.createMedicalReport(this.state).then(() => {
-          window.location.reload();
-        });
-      }
-    );
-  };
-
-  handleEdit = () => {
-    this.setState(
-      {
-        doctorName: this.props.doctor[0].name,
-        patientId: this.props.match.params.id,
-      },
-      () => {
-        this.props.editAndVerified(this.state).then(() => {
-          window.location.reload();
-        });
-      }
-    );
-  };
-
-  handleFilterBloodType = (value) => {
-    this.setState({
-      bloodType: value,
     });
   };
 
@@ -161,19 +88,15 @@ class PatientInfo extends Component {
     let index = 0;
     let convertString = "";
 
-    if (arrayList) {
-      // eslint-disable-next-line
-      arrayList.map((eachArray) => {
-        if (index === 0) {
-          convertString = convertString + eachArray;
-          index++;
-        } else {
-          convertString = convertString + ", " + eachArray;
-        }
-      });
-    } else {
-      return null;
-    }
+    // eslint-disable-next-line
+    arrayList.map((eachArray) => {
+      if (index === 0) {
+        convertString = convertString + eachArray;
+        index++;
+      } else {
+        convertString = convertString + ", " + eachArray;
+      }
+    });
     return convertString;
   };
 
@@ -255,6 +178,14 @@ class PatientInfo extends Component {
           <tr>
             <InfoTitle>Disability</InfoTitle>
             <InfoContent>{this.handleArray(user.disabilities)}</InfoContent>
+          </tr>
+          <tr>
+            <InfoTitle>Emergency Contact</InfoTitle>
+            <InfoContent>{this.handleArray(user.emergencyContact)}</InfoContent>
+          </tr>
+          <tr>
+            <InfoTitle>Language</InfoTitle>
+            <InfoContent>{this.handleArray(user.language)}</InfoContent>
           </tr>
           <tr>
             <InfoTitle>Disease</InfoTitle>
@@ -493,83 +424,10 @@ class PatientInfo extends Component {
     return reportContent;
   };
 
-  renderEditForm = () => {
-    return (
-      <React.Fragment>
-        <h1>Edit Patient Info</h1>
-        <FormContainer>
-          <Form>
-            <Form.Item label="Allergy" name="allergy">
-              <Input
-                size="large"
-                placeholder="Allergy"
-                style={{ width: "98%" }}
-                defaultValue={this.state.allergy}
-                id="allergy"
-                onChange={this.handleChange.bind(this)}
-              />
-            </Form.Item>
-            <Form.Item label="Surgery" name="surgery">
-              <Input
-                size="large"
-                placeholder="Surgery"
-                style={{ width: "98%" }}
-                defaultValue={this.state.surgery}
-                id="surgery"
-                onChange={this.handleChange.bind(this)}
-              />
-            </Form.Item>
-            <Form.Item label="Disability" name="disability">
-              <Input
-                size="large"
-                placeholder="Disability"
-                style={{ width: "98%" }}
-                defaultValue={this.state.disability}
-                id="disability"
-                onChange={this.handleChange.bind(this)}
-              />
-            </Form.Item>
-            <Form.Item label="Disease" name="disease">
-              <Input
-                size="large"
-                placeholder="Disease"
-                style={{ width: "98%" }}
-                defaultValue={this.state.disease}
-                id="disease"
-                onChange={this.handleChange.bind(this)}
-              />
-            </Form.Item>
-            <Form.Item label="Blood Type" name="bloodType">
-              <Select
-                size="large"
-                onSelect={(defaultValue) =>
-                  this.handleFilterBloodType(defaultValue)
-                }
-                style={{ width: "30%" }}
-              >
-                <Option value="AB+">AB+</Option>
-                <Option value="AB-">AB-</Option>
-                <Option value="A+">A+</Option>
-                <Option value="A-">A-</Option>
-                <Option value="B+">B+</Option>
-                <Option value="B-">B-</Option>
-                <Option value="O+">O+</Option>
-                <Option value="O-">O-</Option>
-              </Select>
-            </Form.Item>
-          </Form>
-        </FormContainer>
-      </React.Fragment>
-    );
-  };
-
   render() {
     return (
       <>
         <Container>
-          <SubTitle>
-            Number of patient : <Number>{this.state.currentNumber}</Number>
-          </SubTitle>
           <Title>Patient Information</Title>
           <InfoMainContainer>
             {this.renderInfoTable()}
@@ -597,50 +455,8 @@ class PatientInfo extends Component {
                 {"<"} Back
               </BackButton>
             </Link>
-            <KeepTrackButton
-              type="primary"
-              size="large"
-              onClick={this.handleVisibleEdit.bind(this, true)}
-            >
-              Edit Info
-            </KeepTrackButton>
-            <KeepTrackButton
-              type="primary"
-              size="large"
-              onClick={this.handleVisible.bind(this, true)}
-            >
-              Add Report
-            </KeepTrackButton>
-
-            <NextPatientButton
-              type="primary"
-              size="large"
-              onClick={this.handleNextPatient}
-            >
-              Next Patient {">"}
-            </NextPatientButton>
           </ButtonContainer>
         </Container>
-        {/* Report Modal */}
-        <Modal
-          visible={this.state.visible}
-          title={null}
-          onCancel={this.handleVisible.bind(this, false)}
-          footer={null}
-          className="customModal"
-          width={1000}
-        >
-          {this.renderMedicalForm()}
-          <SubmitContainer>
-            <SubmitButton
-              type="primary"
-              size="large"
-              onClick={this.handleSubmit}
-            >
-              Upload
-            </SubmitButton>
-          </SubmitContainer>
-        </Modal>
         {/* Show Report List Modal */}
         <Modal
           visible={this.state.visibleReport}
@@ -664,23 +480,6 @@ class PatientInfo extends Component {
         >
           {this.renderReportContent()}
         </Modal>
-
-        {/* Show Edit Info Model */}
-        <Modal
-          visible={this.state.visibleEdit}
-          title={null}
-          onCancel={this.handleVisibleEdit.bind(this, false)}
-          footer={null}
-          className="customModal"
-          width={1000}
-        >
-          {this.renderEditForm()}
-          <SubmitContainer>
-            <SubmitButton type="primary" size="large" onClick={this.handleEdit}>
-              Edit
-            </SubmitButton>
-          </SubmitContainer>
-        </Modal>
       </>
     );
   }
@@ -697,17 +496,8 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    nextPatient: (id) => dispatch(nextPatient(id)),
-    createMedicalReport: (credentials) =>
-      dispatch(createMedicalReport(credentials)),
-    editAndVerified: (credentials) => dispatch(editAndVerified(credentials)),
-  };
-};
-
 export default compose(
-  connect(mapStateToProps, mapDispatchToProps),
+  connect(mapStateToProps, null),
   firestoreConnect((props) => {
     let firestoreList = [];
     firestoreList.push({
@@ -735,7 +525,7 @@ export default compose(
 
     return firestoreList;
   })
-)(PatientInfo);
+)(EmergencyInfo);
 
 const InfoMainContainer = styled.table`
   width: 90%;
@@ -755,7 +545,6 @@ const InfoContent = styled.th`
   font-weight: 500;
   border: 1px solid rgb(0, 0, 0, 0.6);
   padding-left: 10px;
-  white-space: break-spaces;
 `;
 
 const RecordText = styled.th`
@@ -781,59 +570,6 @@ const ButtonContainer = styled.div`
   justify-content: flex-end;
 `;
 
-const SubmitContainer = styled.div`
-  margin-top: 10px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-`;
-
-const KeepTrackButton = styled(Button)`
-  background-color: #09835e;
-  border-color: #09835e;
-  margin-left: 20px;
-  width: 130px;
-  :hover {
-    background-color: #00e05a;
-    border-color: #00e05a;
-  }
-
-  :focus {
-    background-color: #00e05a;
-  }
-`;
-
-const SubmitButton = styled(Button)`
-  background-color: #09835e;
-  border-color: #09835e;
-  margin-left: 20px;
-  width: 500px;
-  height: 50px;
-  :hover {
-    background-color: #00e05a;
-    border-color: #00e05a;
-  }
-
-  :focus {
-    background-color: #00e05a;
-  }
-`;
-
-const NextPatientButton = styled(Button)`
-  background-color: #e2c217;
-  border-color: #e2c217;
-  margin-left: 20px;
-  width: 130px;
-  :hover {
-    background-color: #ffe351;
-    border-color: #ffe351;
-  }
-
-  :focus {
-    background-color: #ffe351;
-  }
-`;
-
 const BackButton = styled(Button)`
   background-color: #b22222;
   border-color: #b22222;
@@ -847,10 +583,6 @@ const BackButton = styled(Button)`
   :focus {
     background-color: #e05252fc;
   }
-`;
-
-const Number = styled.span`
-  color: #09835e;
 `;
 
 const Container = styled.div`
