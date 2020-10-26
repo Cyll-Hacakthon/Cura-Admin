@@ -23,8 +23,11 @@ class Home extends Component {
   handleTime = (timeStampDate) => {
     const dateInMillis = timeStampDate * 1000;
 
-    let date = new Date(dateInMillis).toLocaleTimeString();
-    return " \nArrival Time - " + date;
+    let date = new Date(dateInMillis).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return "\nArrival Time - " + date;
   };
 
   renderPatientList = () => {

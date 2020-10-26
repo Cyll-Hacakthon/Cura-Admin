@@ -1,11 +1,23 @@
 import React, { Component } from "react";
-import { SubTitle, Title } from "../style/Layout";
+import { Title } from "../style/Layout";
 import styled from "styled-components";
-import { Button, Modal, Tabs, Form, Input, Select, Card, Col, Row } from "antd";
+import {
+  Button,
+  Modal,
+  Tabs,
+  Form,
+  Input,
+  Select,
+  Card,
+  Col,
+  Row,
+  DatePicker,
+} from "antd";
 import { connect } from "react-redux";
 import { firestoreConnect } from "react-redux-firebase";
 import { compose } from "redux";
 import { Link } from "react-router-dom";
+import { PlusOutlined } from "@ant-design/icons";
 
 //Action
 import {
@@ -17,10 +29,10 @@ import {
 const { TabPane } = Tabs;
 const { TextArea } = Input;
 const { Option } = Select;
-
+let longTermMed = [];
+let shortTermMed = [];
 class PatientInfo extends Component {
   state = {
-    currentNumber: 5,
     visible: false,
     visibleReport: false,
     visibleContent: false,
@@ -34,19 +46,26 @@ class PatientInfo extends Component {
     subjective: "",
     objective: "",
     assessment: "",
-    rx: "",
-    longTermMedicine: [],
     doctorName: "",
     patientId: "",
     patientName: "",
     patientIc: "",
     doctorId: "",
+    dueDateLongTerm: null,
+    longTermMed: [],
+    shortTermMed: [],
+    limit: null,
     //Edit Info
     allergy: "",
     surgery: "",
     disability: "",
     disease: "",
     bloodType: "",
+    //MultipleInput
+    longMedInput: [],
+    uniqueIdLongMed: 1,
+    shortMedInput: [],
+    uniqueIdShortMed: 1,
   };
 
   handleFilterSpclist = (value) => {
@@ -57,14 +76,9 @@ class PatientInfo extends Component {
 
   handleChange = (event) => {
     let eventId = event.target.id;
-    this.setState(
-      {
-        [eventId]: event.target.value,
-      },
-      () => {
-        console.log(this.state.rx);
-      }
-    );
+    this.setState({
+      [eventId]: event.target.value,
+    });
   };
 
   handleVisible = (check) => {
@@ -108,7 +122,8 @@ class PatientInfo extends Component {
         doctorName: this.props.doctor[0].name,
         hospital: this.props.doctor[0].hospital,
         specialist: this.props.doctor[0].specialist,
-        longTermMedicine: this.props.user.medicineTaken.longTerm,
+        longTermMed: longTermMed,
+        shortTermMed: shortTermMed,
       },
       () => {
         this.props.createMedicalReport(this.state).then(() => {
@@ -175,6 +190,87 @@ class PatientInfo extends Component {
       return null;
     }
     return convertString;
+  };
+
+  handleLongTermMed = (arrayList) => {
+    let index = 0;
+    let convertString = "";
+
+    if (arrayList) {
+      // eslint-disable-next-line
+      arrayList.map((eachArray) => {
+        if (index === 0) {
+          convertString = convertString + eachArray.medicine;
+          index++;
+        } else {
+          if (eachArray.medicine === "")
+            convertString = convertString + eachArray.medicine;
+          else convertString = convertString + ", " + eachArray.medicine;
+        }
+      });
+    } else {
+      return null;
+    }
+    return convertString;
+  };
+
+  handleChangeLongMed = (event) => {
+    longTermMed[event.target.id] = event.target.value;
+  };
+
+  handleChangeShortMed = (event) => {
+    shortTermMed[event.target.id] = event.target.value;
+  };
+
+  handleLongMedInput = () => {
+    let multipleInput = (
+      <Form.Item>
+        <Input
+          placeholder="Long term medication"
+          style={{ width: "98%", whiteSpace: "pre-line" }}
+          id={this.state.uniqueIdLongMed}
+          defaultValue=""
+          onChange={this.handleChangeLongMed.bind(this)}
+          size="large"
+        />
+      </Form.Item>
+    );
+
+    this.setState({
+      longMedInput: this.state.longMedInput.concat(multipleInput),
+      uniqueIdLongMed: this.state.uniqueIdLongMed + 1,
+    });
+  };
+
+  handleShortMedInput = () => {
+    let multipleInput = (
+      <Form.Item>
+        <Input
+          placeholder="Long term medication"
+          style={{ width: "98%", whiteSpace: "pre-line" }}
+          id={this.state.uniqueIdShortMed}
+          defaultValue=""
+          onChange={this.handleChangeShortMed.bind(this)}
+          size="large"
+        />
+      </Form.Item>
+    );
+
+    this.setState({
+      shortMedInput: this.state.shortMedInput.concat(multipleInput),
+      uniqueIdShortMed: this.state.uniqueIdLongMed + 1,
+    });
+  };
+
+  onChangeDate = (date) => {
+    this.setState(
+      {
+        dueDateLongTerm: date._d,
+      },
+      () => {
+        console.log(this.state.dueDateLongTerm);
+      }
+    );
   };
 
   renderInfoTable = () => {
@@ -264,10 +360,10 @@ class PatientInfo extends Component {
             <InfoTitle>Medicine Taken</InfoTitle>
             <InfoContent>
               {"Long term medicine taken : " +
-                this.handleArray(user.medicineTaken.longTerm) +
+                this.handleLongTermMed(user.longTermMed) +
                 "\n" +
                 "Recent medicine taken: " +
-                user.medicineTaken.recent}
+                user.shortTermMed}
             </InfoContent>
           </tr>
         </React.Fragment>
@@ -278,7 +374,32 @@ class PatientInfo extends Component {
   };
 
   componentDidMount() {
-    console.log(this.state.specialList);
+    this.setState({
+      longMedInput: this.state.longMedInput.concat(
+        <Form.Item label="Long term medication">
+          <Input
+            size="large"
+            placeholder="Long term medication"
+            style={{ width: "98%", whiteSpace: "pre-line" }}
+            defaultValue=""
+            id={0}
+            onChange={this.handleChangeLongMed.bind(this)}
+          />
+        </Form.Item>
+      ),
+      shortMedInput: this.state.shortMedInput.concat(
+        <Form.Item label="Short term medication">
+          <Input
+            size="large"
+            placeholder="Short term medication"
+            style={{ width: "98%", whiteSpace: "pre-line" }}
+            defaultValue=""
+            id={0}
+            onChange={this.handleChangeShortMed.bind(this)}
+          />
+        </Form.Item>
+      ),
+    });
   }
 
   renderMedicalForm = () => {
@@ -330,18 +451,50 @@ class PatientInfo extends Component {
             </Form>
           </FormContainer>
         </TabPane>
-        <TabPane tab="Prescription" key="2">
+        <TabPane tab="Prescription(Rx)" key="2">
           <FormContainer>
             <Form>
-              <Form.Item label="Rx" name="rx">
-                <TextArea
-                  placeholder="Rx"
-                  autoSize={{ minRows: 5, maxRows: 7 }}
-                  style={{ width: "98%", whiteSpace: "pre-line" }}
-                  defaultValue={this.state.rx}
-                  id="rx"
+              {this.state.longMedInput}
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={this.handleLongMedInput}
+                  block
+                  icon={<PlusOutlined />}
+                >
+                  Add field
+                </Button>
+              </Form.Item>
+              <Form.Item
+                label="Due date (Long term medication)"
+                name="dueDateLongTerm"
+              >
+                <DatePicker
+                  style={{ width: "98%", height: 48 }}
+                  onChange={this.onChangeDate}
+                />
+              </Form.Item>
+              <Form.Item label="Limit" name="limitLongTerm">
+                <Input
+                  size="large"
+                  placeholder="Limit for purchase medicine"
+                  style={{ width: "98%" }}
+                  defaultValue={this.state.limit}
+                  id="limit"
+                  type="number"
                   onChange={this.handleChange.bind(this)}
                 />
+              </Form.Item>
+              {this.state.shortMedInput}
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={this.handleShortMedInput}
+                  block
+                  icon={<PlusOutlined />}
+                >
+                  Add field
+                </Button>
               </Form.Item>
             </Form>
           </FormContainer>
@@ -483,8 +636,16 @@ class PatientInfo extends Component {
                   {"Assessment - " + eachReport.assessment}
                 </ReportContentText>
                 <br />
-                <ReportContentText>
-                  {"Prescription - " + eachReport.rx}
+                <ReportContentText style={{ textDecoration: "underline" }}>
+                  Prescription
+                </ReportContentText>
+                <br />
+                <ReportContentText style={{ whiteSpace: "break-spaces" }}>
+                  {"Long Term Medicine : " +
+                    eachReport.longTermMed +
+                    "\n" +
+                    "Short Term Medicine : " +
+                    eachReport.shortTermMed}
                 </ReportContentText>
               </React.Fragment>
             );
@@ -567,9 +728,6 @@ class PatientInfo extends Component {
     return (
       <>
         <Container>
-          <SubTitle>
-            Number of patient : <Number>{this.state.currentNumber}</Number>
-          </SubTitle>
           <Title>Patient Information</Title>
           <InfoMainContainer>
             {this.renderInfoTable()}
@@ -847,10 +1005,6 @@ const BackButton = styled(Button)`
   :focus {
     background-color: #e05252fc;
   }
-`;
-
-const Number = styled.span`
-  color: #09835e;
 `;
 
 const Container = styled.div`

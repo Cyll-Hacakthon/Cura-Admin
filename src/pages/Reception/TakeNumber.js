@@ -20,6 +20,7 @@ class TakeNumber extends Component {
     doctor: "",
     patientBirthDate: null,
     patientAge: null,
+    specialist: "",
   };
 
   handleChange = (event) => {
@@ -32,6 +33,12 @@ class TakeNumber extends Component {
   handleChooseDoctor = (value) => {
     this.setState({
       doctor: value,
+    });
+  };
+
+  handleChooseSpecialist = (value) => {
+    this.setState({
+      specialist: value,
     });
   };
 
@@ -76,7 +83,38 @@ class TakeNumber extends Component {
                     type="number"
                   />
                 </Form.Item>
-
+                <Form.Item label="Specialist" name="specialist">
+                  <Select
+                    size="large"
+                    style={{ width: "98%" }}
+                    onSelect={(defaultValue) =>
+                      this.handleChooseSpecialist(defaultValue)
+                    }
+                  >
+                    <Option value="General">General</Option>
+                    <Option value="Allergists/Immunologists">
+                      Allergists/Immunologists
+                    </Option>
+                    <Option value="Anesthesiologists">Anesthesiologists</Option>
+                    <Option value="Cardiologists">Cardiologists</Option>
+                    <Option value="Colon and Rectal Surgeons">
+                      Colon and Rectal Surgeons
+                    </Option>
+                    <Option value="Critical Care Medicine Specialists">
+                      Critical Care Medicine Specialists
+                    </Option>
+                    <Option value="Dermatologists">Dermatologists</Option>
+                    <Option value="Endocrinologists">Endocrinologists</Option>
+                    <Option value="Emergency">Emergency</Option>
+                    <Option value="Gastroenterologists">
+                      Gastroenterologists
+                    </Option>
+                    <Option value="Geriatric Medicine Specialists">
+                      Geriatric Medicine Specialists
+                    </Option>
+                    <Option value="Hematologists">Hematologists</Option>
+                  </Select>
+                </Form.Item>
                 <Form.Item label="Visit Purpose" name="visitPurpose">
                   <Input
                     size="large"
@@ -96,13 +134,18 @@ class TakeNumber extends Component {
                     style={{ width: "98%" }}
                   >
                     {this.props.doctor &&
-                      this.props.doctor.map((eachDoctor) => {
-                        return (
-                          <Option value={eachDoctor.name}>
-                            {eachDoctor.name}
-                          </Option>
-                        );
-                      })}
+                      this.props.doctor
+                        .filter(
+                          (eachDoctor) =>
+                            eachDoctor.specialist === this.state.specialist
+                        )
+                        .map((eachDoctor) => {
+                          return (
+                            <Option value={eachDoctor.name}>
+                              {eachDoctor.name}
+                            </Option>
+                          );
+                        })}
                   </Select>
                 </Form.Item>
               </Form>

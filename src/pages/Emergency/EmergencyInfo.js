@@ -100,6 +100,28 @@ class EmergencyInfo extends Component {
     return convertString;
   };
 
+  handleLongTermMed = (arrayList) => {
+    let index = 0;
+    let convertString = "";
+
+    if (arrayList) {
+      // eslint-disable-next-line
+      arrayList.map((eachArray) => {
+        if (index === 0) {
+          convertString = convertString + eachArray.medicine;
+          index++;
+        } else {
+          if (eachArray.medicine === "")
+            convertString = convertString + eachArray.medicine;
+          else convertString = convertString + ", " + eachArray.medicine;
+        }
+      });
+    } else {
+      return null;
+    }
+    return convertString;
+  };
+
   renderInfoTable = () => {
     const { user } = this.props;
     if (user) {
@@ -195,10 +217,10 @@ class EmergencyInfo extends Component {
             <InfoTitle>Medicine Taken</InfoTitle>
             <InfoContent>
               {"Long term medicine taken : " +
-                this.handleArray(user.medicineTaken.longTerm) +
+                this.handleLongTermMed(user.longTermMed) +
                 "\n" +
                 "Recent medicine taken: " +
-                user.medicineTaken.recent}
+                user.shortTermMed}
             </InfoContent>
           </tr>
         </React.Fragment>
@@ -545,6 +567,7 @@ const InfoContent = styled.th`
   font-weight: 500;
   border: 1px solid rgb(0, 0, 0, 0.6);
   padding-left: 10px;
+  white-space: break-spaces;
 `;
 
 const RecordText = styled.th`

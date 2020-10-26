@@ -37,13 +37,14 @@ export const createMedicalReport = (credentials) => {
           subjective: credentials.subjective,
           objective: credentials.objective,
           assessment: credentials.assessment,
-          rx: credentials.rx,
           patientId: credentials.patientId,
           doctorName: credentials.doctorName,
           hospital: credentials.hospital,
           patientName: credentials.patientName,
           patientIc: credentials.patientIc,
           doctorId: credentials.doctorId,
+          longTermMed: credentials.longTermMed,
+          shortTermMed: credentials.shortTermMed,
         })
         .then(async () => {
           await firebase
@@ -54,11 +55,16 @@ export const createMedicalReport = (credentials) => {
               id: uniqueIdPharmacy,
               patientId: credentials.patientId,
               doctorName: credentials.doctorName,
-              rx: credentials.rx,
+              longTermMed: credentials.longTermMed,
+              shortTermMed: credentials.shortTermMed,
               patientName: credentials.patientName,
               patientIc: credentials.patientIc,
               hospital: credentials.hospital,
               createdAt: new Date(),
+              accessPrepare: true,
+              accessCollect: false,
+              handleId: "",
+              specialist: credentials.specialist,
             });
           await firebase
             .firestore()
@@ -68,10 +74,12 @@ export const createMedicalReport = (credentials) => {
               medicalReport: firebase.firestore.FieldValue.arrayUnion(
                 uniqueIdReport
               ),
-              medicineTaken: {
-                longTerm: credentials.longTermMedicine,
-                recent: credentials.rx,
-              },
+              longTermMed: firebase.firestore.FieldValue.arrayUnion({
+                dueDate: credentials.dueDateLongTerm,
+                limit: credentials.limit,
+                medicine: credentials.longTermMed,
+              }),
+              shortTermMed: credentials.shortTermMed,
             });
         });
     } catch (err) {

@@ -61,8 +61,16 @@ class Record extends Component {
                   {"Assessment - " + eachReport.assessment}
                 </ReportContentText>
                 <br />
-                <ReportContentText>
-                  {"Prescription - " + eachReport.rx}
+                <ReportContentText style={{ textDecoration: "underline" }}>
+                  Prescription
+                </ReportContentText>
+                <br />
+                <ReportContentText style={{ whiteSpace: "break-spaces" }}>
+                  {"Long Term Medicine : " +
+                    eachReport.longTermMed +
+                    "\n" +
+                    "Short Term Medicine : " +
+                    eachReport.shortTermMed}
                 </ReportContentText>
               </React.Fragment>
             );

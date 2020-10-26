@@ -7,11 +7,11 @@ import { Link } from "react-router-dom";
 import { Button } from "antd";
 
 //action
-import { deletePrescription } from "../../store/actions/pharmacyAction";
+import { passToCollectList } from "../../store/actions/pharmacyAction";
 
-class MedicineInfo extends Component {
+class PrepareInfo extends Component {
   handleDone = () => {
-    this.props.deletePrescription(this.props.match.params.id).then(() => {
+    this.props.passToCollectList(this.props.match.params.id).then(() => {
       this.props.history.push("/");
     });
   };
@@ -23,7 +23,13 @@ class MedicineInfo extends Component {
           <h1>{"Patient Name - " + this.props.medicalInfo.patientName}</h1>
           <h2>{"Patient Ic - " + this.props.medicalInfo.patientIc}</h2>
           <h2>{"Doctor - Dr." + this.props.medicalInfo.doctorName}</h2>
-          <h2>{"Perscription - " + this.props.medicalInfo.rx}</h2>
+          <h2 style={{ textDecoration: "underline" }}>Perscription</h2>
+          <h2>
+            {"Long Term Medicine : " + this.props.medicalInfo.longTermMed}
+          </h2>
+          <h2>
+            {"Short Term Medicine : " + this.props.medicalInfo.shortTermMed}
+          </h2>
         </div>
       );
     } else {
@@ -61,7 +67,7 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    deletePrescription: (id) => dispatch(deletePrescription(id)),
+    passToCollectList: (id) => dispatch(passToCollectList(id)),
   };
 };
 
@@ -72,7 +78,7 @@ export default compose(
       collection: "pharmacy",
     },
   ])
-)(MedicineInfo);
+)(PrepareInfo);
 
 const InfoMainContainer = styled.table`
   width: 90%;

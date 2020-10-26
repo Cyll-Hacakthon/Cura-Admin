@@ -3,12 +3,19 @@ import styled from "styled-components";
 import { Menu, Layout, Divider } from "antd";
 import { ButtonText } from "../../style/Layout";
 import Logo from "../../assests/LogoPharmacy.png";
-import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  LogoutOutlined,
+  SwitcherOutlined,
+  CopyOutlined,
+} from "@ant-design/icons";
 import { signOut } from "../../store/actions/authAction";
 import { connect } from "react-redux";
 
 //Dashboard content
-import MedicineList from "./MedicineList";
+import PrepareList from "./PrepareList";
+import HandleList from "./HandleList";
+import CollectList from "./CollectList";
 
 class DashboardPharmacy extends Component {
   state = {
@@ -17,9 +24,21 @@ class DashboardPharmacy extends Component {
 
   handleNavigation = (menu) => {
     switch (menu) {
-      case "List": {
+      case "Patient": {
         this.setState({
           selectedMenu: 0,
+        });
+        break;
+      }
+      case "Handle": {
+        this.setState({
+          selectedMenu: 1,
+        });
+        break;
+      }
+      case "Collect": {
+        this.setState({
+          selectedMenu: 2,
         });
         break;
       }
@@ -34,10 +53,16 @@ class DashboardPharmacy extends Component {
   renderContent = () => {
     switch (this.state.selectedMenu) {
       case 0: {
-        return <MedicineList />;
+        return <PrepareList />;
+      }
+      case 1: {
+        return <HandleList />;
+      }
+      case 2: {
+        return <CollectList />;
       }
       default: {
-        return <MedicineList />;
+        return <PrepareList />;
       }
     }
   };
@@ -59,9 +84,25 @@ class DashboardPharmacy extends Component {
           <LogoCura src={Logo} />
         </div>
         <Divider />
-        <Menu.Item key="0" onClick={this.handleNavigation.bind(this, "List")}>
+        <Menu.Item
+          key="0"
+          onClick={this.handleNavigation.bind(this, "Patient")}
+        >
           <UserOutlined style={{ color: "#ffffff", fontSize: 20 }} />
-          <ButtonText>Medicine list</ButtonText>
+          <ButtonText>Patient list</ButtonText>
+        </Menu.Item>
+
+        <Menu.Item key="1" onClick={this.handleNavigation.bind(this, "Handle")}>
+          <SwitcherOutlined style={{ color: "#ffffff", fontSize: 20 }} />
+          <ButtonText>Handle list</ButtonText>
+        </Menu.Item>
+
+        <Menu.Item
+          key="2"
+          onClick={this.handleNavigation.bind(this, "Collect")}
+        >
+          <CopyOutlined style={{ color: "#ffffff", fontSize: 20 }} />
+          <ButtonText>Collect list</ButtonText>
         </Menu.Item>
 
         <Menu.Item key="5" onClick={this.handleSignOut}>
